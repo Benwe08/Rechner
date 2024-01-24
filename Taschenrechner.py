@@ -25,7 +25,9 @@ def eingabe(i, Loesungen):
     global altetext
     global altetext
     global multiplier
-    if Eingabe == '↑' or '↓':
+    if Eingabe == '↑':
+        back = back
+    elif Eingabe == '↓':
         back = back
     else:
         back = 0
@@ -247,6 +249,7 @@ def ende(Loesungen):
             Rechnung = ''
         else:
             label["text"] = label["text"]
+        print(altetext)
 #Label
 label = Label(
         text='|' ,
