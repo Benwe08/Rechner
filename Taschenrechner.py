@@ -14,6 +14,9 @@ Loesungen = ''
 back = 0
 Rechnung = '|'
 multiplier = ['1','2','3','4','5','6','7','8','9','0',')']
+RZeichen = ['*','/','^',]
+Pfeile = ['↑','←','→','↓']
+Rechenzeichen = ['+','-','*','/','^','(',')']
 #Funktionen
 def eingabe(i, Loesungen):
     Eingabe = Zeichen[i]
@@ -21,13 +24,32 @@ def eingabe(i, Loesungen):
     Strichposi = Strichpos + 1
     global back
     global Rechnung
+    global RZeichen
+    global Rechenzeichen
     Rstrichpos = Rechnung.find('|')
     global altetext
     global altetext
     global multiplier
-    if Eingabe == '↑':
-        back = back
-    elif Eingabe == '↓':
+    filler = 1
+    check = 0
+    if Eingabe in RZeichen:
+        if label["text"][Strichpos - 1] in RZeichen:
+            altesvorzeichen = label["text"][Strichpos - 1]
+            Rechnung = Rechnung[:Rstrichpos][:-1] + Rechnung[Rstrichpos:]
+            label["text"] = label["text"][:Strichpos][:-1] + label["text"][Strichpos:]
+            Rstrichpos -= 1
+            Strichpos = Strichpos - 1
+            check = 1
+            if altesvorzeichen == '^':
+                Rechnung = Rechnung.replace('*','',Rstrichpos)
+                Rstrichpos = Rstrichpos - 1
+            else:
+                filler = filler
+        else:
+            filler = filler
+    else:
+        filler = filler
+    if Eingabe == '↑' or '↓':
         back = back
     else:
         back = 0
@@ -35,7 +57,7 @@ def eingabe(i, Loesungen):
         label["text"] = ''
         Rechnung = ''
     else:
-        label["text"] = label["text"]
+        filler = filler
     if Eingabe == 'C':
         label["text"] = ''
         Rechnung = ''
@@ -44,13 +66,70 @@ def eingabe(i, Loesungen):
         Eingabe = label["text"][:Strichpos] + Eingabe + label["text"][Strichpos:]
         label["text"] = Eingabe
     elif Eingabe == '^':
+        labeli = 1
+        ri = 1
+        zlabeli = 1
+        zri = 1
         if Rechnung[Rstrichpos - 1] in multiplier:
             Rechnung = Rechnung[:Rstrichpos] + '**' + Rechnung[Rstrichpos:]
             Rstrichpos += 1
+            alteRstrichpos = Rstrichpos
+            Rstrichpos -= 2
         else:
             Rechnung = Rechnung[:Rstrichpos] + '*' + Rechnung[Rstrichpos:]
+            alteRstrichpos = Rstrichpos
+            Rstrichpos -= 2
         Eingabe = label["text"][:Strichpos] + Eingabe + label["text"][Strichpos:]
         label["text"] = Eingabe
+        Rechnung = Rechnung.replace('|', '')
+        Klammerauflabel1 = Strichpos + 1
+        Klammeraufr1 = alteRstrichpos + 1
+        for i in range(len(Rechnung[Rstrichpos:])):
+            zlabeli += 1
+            zri += 1
+            try:
+                if label["text"][Strichpos:][zlabeli] in Rechenzeichen:
+                    Klammerzulabel = len(label["text"][:Strichpos]) + zlabeli + 1
+                    zlabeli -= 1
+                else:
+                    Klammerzulabel = len(label["text"][Strichpos:])
+            except:
+                Klammerzulabel = Strichpos + 2
+            try:
+                if Rechnung[alteRstrichpos:][zri] in Rechenzeichen:
+                    Klammerzur = len(Rechnung[alteRstrichpos:]) + zri + 1
+                    zri -= 1
+                else:
+                    Klammerzur = len(Rechnung[alteRstrichpos:])
+            except:
+                Klammerzur = alteRstrichpos + 2
+        try:
+            for i in range(len(Rechnung[:Rstrichpos]) + 2):
+                labeli += 1
+                ri += 1
+                if label["text"][:Strichpos][labeli] in Rechenzeichen:
+                    Klammerauflabel = len(label["text"][:Strichpos]) - labeli
+                    print('Check', Klammerauflabel)
+                    labeli -= 1
+                else:
+                    Klammerauflabel = 0
+                if Rechnung[:Rstrichpos][- ri] in Rechenzeichen:
+                    Klammeraufr = len(Rechnung[:Rstrichpos]) - ri
+                    print('Checkr', Klammeraufr)
+                    ri -= 1
+                else:
+                    Klammeraufr = 0
+        except:
+            Klammerauflabel = 0
+            Klammeraufr = 0
+        label["text"] = label["text"][:Klammerauflabel1] + '(' + label["text"][Klammerauflabel1:]
+        Rechnung = Rechnung[:Klammeraufr1] + '(' + Rechnung[Klammeraufr1:]
+        label["text"] = label["text"][:Klammerzulabel] + '))' + label["text"][Klammerzulabel:]
+        Rechnung = Rechnung[:Klammerzur] + '))' + Rechnung[Klammerzur:]
+        label["text"] = label["text"][:Klammerauflabel] + '(' + label["text"][Klammerauflabel:]
+        Rechnung = Rechnung[:Klammeraufr + 1] + '(' + Rechnung[Klammeraufr + 1:]
+        Strichpos += 2
+        Rstrichpos += 4
     elif Eingabe == '(':
         try:
             if Rechnung[Rstrichpos - 1] in multiplier:
@@ -81,7 +160,7 @@ def eingabe(i, Loesungen):
         Eingabe = label["text"][:Strichpos] + Eingabe + label["text"][Strichpos:]
         label["text"] = Eingabe
     elif Eingabe == 'DEL':
-        label["text"] = label["text"]
+        filler = filler
     elif Eingabe == '↑':
         if back > len(altetext):
             back = len(altetext)
@@ -90,8 +169,7 @@ def eingabe(i, Loesungen):
             label["text"] = altetext[- back]
             Rechnung = alterechnung[- back]
         except:
-            label["text"] = label["text"]
-            Rechnung = Rechnung
+            filler = filler
     elif Eingabe == '↓':
         if back <= 0:
             back = 0
@@ -100,16 +178,20 @@ def eingabe(i, Loesungen):
             label["text"] = altetext[- back]
             Rechnung = alterechnung[- back]
         except:
-            label["text"] = label["text"]
-            Rechnung = Rechnung
+            filler = filler
     elif Eingabe == '←':
-        label["text"] = label["text"]
+        filler = filler
     elif Eingabe == '→':
-        label["text"] = label["text"]
+        filler = filler
     else:
         Rechnung = Rechnung[:Rstrichpos] + Eingabe + Rechnung[Rstrichpos:]
         Eingabe = label["text"][:Strichpos] + Eingabe + label["text"][Strichpos:]
         label["text"] = Eingabe
+
+    if check == 1:
+        Rstrichpos = Rstrichpos
+    else:
+        filler = filler
 
     if Eingabe == '←':
         if label["text"][Strichpos - 1] == 'π':
@@ -125,8 +207,12 @@ def eingabe(i, Loesungen):
         elif label["text"][Strichpos - 1] == '(':
             Strichpos = Strichpos - 1
             Rstrichpos = Rstrichpos -1
-            if label["text"][Strichpos - 1] != Rechnung[Rstrichpos - 1]:
+            if label["text"][Strichpos - 1] == '^':
+                filler = filler
+            elif label["text"][Strichpos - 1] != Rechnung[Rstrichpos - 1]:
                 Rstrichpos = Rstrichpos - 1
+            else:
+                filler = filler 
         elif label["text"][Strichpos - 1] == '^':
             Strichpos = Strichpos - 1
             Rstrichpos = Rstrichpos -1
@@ -176,7 +262,6 @@ def eingabe(i, Loesungen):
             if label["text"][Strichpos - 1] != Rechnung[Rstrichpos - 1]:
                 Rechnung = Rechnung[:Rstrichpos][:-1] + Rechnung[Rstrichpos:]
                 Rstrichpos = Rstrichpos - 1
-                print('pi')
         elif label["text"][Strichpos - 1] == 'e':
             Rechnung = Rechnung[:Rstrichpos][:-13] + Rechnung[Rstrichpos:]
             label["text"] = label["text"][:Strichpos][:-1] + label["text"][Strichpos:]
@@ -185,7 +270,6 @@ def eingabe(i, Loesungen):
             if label["text"][Strichpos - 1] != Rechnung[Rstrichpos - 1]:
                 Rechnung = Rechnung[:Rstrichpos][:-1] + Rechnung[Rstrichpos:]
                 Rstrichpos = Rstrichpos - 1
-                print('e')
         elif label["text"][Strichpos - 1] == '(':
             Rechnung = Rechnung[:Rstrichpos][:-1] + Rechnung[Rstrichpos:]
             label["text"] = label["text"][:Strichpos][:-1] + label["text"][Strichpos:]
@@ -209,12 +293,12 @@ def eingabe(i, Loesungen):
             Rstrichpos = Rstrichpos -1
         if label["text"][Strichpos - 1] == '^':
             if Rechnung[Rstrichpos - 2] == '*':
-                label["text"] = label["text"]
+                filler = filler
             else:
                 Rechnung = Rechnung[:Rstrichpos - 1] + '*' + Rechnung[Rstrichpos - 1:]
     else:
         label["text"] = label["text"].replace('|', '')
-        label["text"] = label["text"][:Strichposi] + '|' + label["text"][Strichposi:]
+        label["text"] = label["text"][:Strichpos + 1] + '|' + label["text"][Strichpos + 1:]
         Rechnung = Rechnung.replace('|', '')
         Rechnung = Rechnung[:Rstrichpos + 1] + '|' + Rechnung[Rstrichpos + 1:]
     print(Rechnung)
@@ -223,8 +307,9 @@ def ende(Loesungen):
     global altetext
     global alterechnung
     global Rechnung
+    filler = 1
     if label["text"] == 'Syntax-Fehler':
-        label["text"] = label["text"]
+        filler = filler
     else:
         Rechnung = Rechnung.replace('|','')
         label["text"] = label["text"].replace('|', '')
@@ -248,15 +333,14 @@ def ende(Loesungen):
             label["text"] = 'Syntax-Fehler'
             Rechnung = ''
         else:
-            label["text"] = label["text"]
-        print(altetext)
+            filler = filler
 #Label
 label = Label(
         text='|' ,
-    borderwidth=0,
     relief="flat",
     width=62,
     height=5,
+    borderwidth=0,
     bg="white",
     fg="black",
     font=('arial',15)
@@ -268,13 +352,17 @@ for i in range(len(Zeichen)):
     if spalte == 5:
         spalte = 0
         zeile += 1
+    if Zeichen[i] in Pfeile:
+        colour = "green"
+    else:
+        colour = "black"
     btn.append(Button(
             text=Zeichen[Zaehler],
-            borderwidth=0,
             relief="flat",
             width=10,
             height=5,
-            bg="black",
+            borderwidth=0,
+            bg=colour,
             fg="white",
             font=('arial',15),
             command =lambda i=i: eingabe(i, Loesungen)
@@ -289,10 +377,10 @@ for i in range(len(Zeichen)):
 # = zeichen
 equalbtn = Button(
         text='=',
-        borderwidth=0,
         relief="flat",
         width=11 * weite,
         height=5,
+        borderwidth=0,
         bg="black",
         fg="white",
         font=('arial',15),
